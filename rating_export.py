@@ -15,7 +15,9 @@ soup = BeautifulSoup(html, 'html.parser')
 
 imdb = Imdb()
 
-browser = webdriver.Firefox()
+#paste to 'FirefoxProfile' full path to folder somewhere at %AppData%\Mozilla\Firefox\Profiles
+profile = webdriver.FirefoxProfile(r'')
+browser = webdriver.Firefox(profile)
 browser.set_page_load_timeout(10)
 
 table = soup.find('table')
