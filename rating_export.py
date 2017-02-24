@@ -49,7 +49,8 @@ for row in rows[1:]:
 				#seems like it's the only way to restrict 'get' by timer
 				pass
 			
-			#rate film
+			browser.find_element_by_xpath('//*[@data-reactid=".2.0"]').click()
+			browser.find_element_by_xpath('//*[@data-reactid=".2.1.0.1.$' + rating + '"]').click()
 			
 			print('Rated')
 			break
