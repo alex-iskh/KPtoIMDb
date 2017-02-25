@@ -1,5 +1,6 @@
 #Aleksandr Iskhakov, 2017. Code and its parts are free to use for non-commercial purposes
 #requires python 3 with following packages: beautifulsoup4, imdbpie, transliterate, selenium and also geckodriver
+import sys
 from bs4 import BeautifulSoup
 from imdbpie import Imdb
 from transliterate import translit, get_available_language_codes
@@ -9,16 +10,18 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 
-#paste to 'open' name of file with your rates
-html = open().read()
-soup = BeautifulSoup(html, 'html.parser')
+try:
+	html = open(sys.argv[1]).read()
+	soup = BeautifulSoup(html, 'html.parser')
+
+	profile = webdriver.FirefoxProfile(sys.argv[2])
+	browser = webdriver.Firefox(profile)
+	browser.set_page_load_timeout(10)
+except FileNotFoundError as ex:
+	print('Error in arguments: ' + ex.filename + ' - ' + ex.strerror)
+	sys.exit()
 
 imdb = Imdb()
-
-#paste to 'FirefoxProfile' full path to folder somewhere at %AppData%\Mozilla\Firefox\Profiles
-profile = webdriver.FirefoxProfile(r'')
-browser = webdriver.Firefox(profile)
-browser.set_page_load_timeout(10)
 
 table = soup.find('table')
 rows = table.findAll('tr')
