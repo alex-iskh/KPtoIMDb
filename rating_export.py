@@ -56,12 +56,14 @@ for row in rows[1:]:
 	
 	for founded_film in search_res:
 		log('\nFounded: ' + str(founded_film['title']) + ' (' + str(founded_film['year']) + ')')
-		if year == founded_film['year']:
-			if title != founded_film['title']:
-				log('Year matches, but the title is different')
+		year_diff = abs(int(year) - int(founded_film['year']))
+		if year_diff <= 1:
+			if title != founded_film['title'] or year_diff != 0:
+				log('Title is different or year doesn\'t exactly match')
 				with open('titles_didn\'t_match.txt', 'a') as titles_didnt_match:
 					titles_didnt_match.write(title + '|' + title_rus + '|' + year + '|' + rating + '\n'
-						+ founded_film['title'] + ': http://www.imdb.com/title/' + founded_film['imdb_id'] + '\n\n')
+						+ founded_film['title'] + ' (' + str(founded_film['year']) + ') : ' 
+						+ 'http://www.imdb.com/title/' + founded_film['imdb_id'] + '\n\n')
 			
 			try:
 				browser.get('http://www.imdb.com/title/' + founded_film['imdb_id'])
@@ -74,7 +76,7 @@ for row in rows[1:]:
 			log('Rated')
 			break
 		else:
-			log('Year does not match')
+			log('Year does not match at all')
 	else:
 		log('\nFilm not found in the search results, skipped')
 		with open('skipped_films.txt', 'a') as skipped_films:
