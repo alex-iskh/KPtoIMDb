@@ -32,6 +32,12 @@ for row in rows[1:]:
 	year = cols[2].string
 	rating = cols[7].string
 	
+	if rating == '-':
+		print('Film has no rating, skipped')
+		with open('skipped_films.txt', 'a') as skipped_films:
+			skipped_films.write(title + '|' + title_rus + '|' + year + '|' + rating + '\n')
+		continue
+	
 	if not title:
 		title = translit(title_rus, 'ru', reversed=True)
 	
