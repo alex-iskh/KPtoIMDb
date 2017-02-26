@@ -14,7 +14,7 @@ from selenium.common.exceptions import TimeoutException
 def log(message):
 	print(message)
 	with open('log.txt', 'a') as log_file:
-		log_file.write(message)
+		log_file.write(message + '\n')
 
 log('Export started: ' + str(datetime.now()))
 
@@ -54,19 +54,19 @@ for row in rows[1:]:
 	log('\n==========================================================')
 	log(str(title) + '\n' + str(title_rus) + '\nYear: ' + str(year) + '\nRating: ' + str(rating))
 	
-	for founded_film in search_res:
-		log('\nFounded: ' + str(founded_film['title']) + ' (' + str(founded_film['year']) + ')')
-		year_diff = abs(int(year) - int(founded_film['year']))
+	for found_film in search_res:
+		log('\nFound: ' + str(found_film['title']) + ' (' + str(found_film['year']) + ')')
+		year_diff = abs(int(year) - int(found_film['year']))
 		if year_diff <= 1:
-			if title != founded_film['title'] or year_diff != 0:
+			if title != found_film['title'] or year_diff != 0:
 				log('Title is different or year doesn\'t exactly match')
 				with open('titles_didn\'t_match.txt', 'a') as titles_didnt_match:
 					titles_didnt_match.write(title + '|' + title_rus + '|' + year + '|' + rating + '\n'
-						+ founded_film['title'] + ' (' + str(founded_film['year']) + ') : ' 
-						+ 'http://www.imdb.com/title/' + founded_film['imdb_id'] + '\n\n')
+						+ found_film['title'] + ' (' + str(found_film['year']) + ') : ' 
+						+ 'http://www.imdb.com/title/' + found_film['imdb_id'] + '\n\n')
 			
 			try:
-				browser.get('http://www.imdb.com/title/' + founded_film['imdb_id'])
+				browser.get('http://www.imdb.com/title/' + found_film['imdb_id'])
 			except TimeoutException:
 				#seems like it's the only way to restrict 'get' by timer
 				pass
