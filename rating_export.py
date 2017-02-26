@@ -45,7 +45,10 @@ for row in rows[1:]:
 		if year == founded_film['year']:
 			if title != founded_film['title']:
 				print('Year matches, but the title is different')
-				#write to file to check correctness
+				with open('titles_didn\'t_match.txt', 'a') as titles_didnt_match:
+					titles_didnt_match.write(title + '|' + title_rus + '|' + year + '|' + rating + '\n'
+						+ founded_film['title'] + ': http://www.imdb.com/title/' + founded_film['imdb_id'] + '\n\n')
+			
 			try:
 				browser.get('http://www.imdb.com/title/' + founded_film['imdb_id'])
 			except TimeoutException:
@@ -61,7 +64,8 @@ for row in rows[1:]:
 			print('Year does not match')
 	else:
 		print('\nFilm not found in the search results, skipped')
-		#write to file with skipped entries
+		with open('skipped_films.txt', 'a') as skipped_films:
+			skipped_films.write(title + '|' + title_rus + '|' + year + '|' + rating + '\n')
 
 browser.quit()
 print('Export finished')
