@@ -60,8 +60,8 @@ for row in rows[1:]:
 		if year_diff <= 1:
 			if title != found_film['title'] or year_diff != 0:
 				log('Title is different or year doesn\'t exactly match')
-				with open('titles_didn\'t_match.txt', 'a') as titles_didnt_match:
-					titles_didnt_match.write(title + '|' + title_rus + '|' + year + '|' + rating + '\n'
+				with open('not_exact_match.txt', 'a') as not_exact_match:
+					not_exact_match.write(title + '|' + title_rus + '|' + year + '|' + rating + '\n'
 						+ found_film['title'] + ' (' + str(found_film['year']) + ') : ' 
 						+ 'http://www.imdb.com/title/' + found_film['imdb_id'] + '\n\n')
 			
