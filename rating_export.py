@@ -37,7 +37,7 @@ for row in rows[1:]:
 	cols = row.findAll('td')
 	title = cols[1].string
 	title_rus = cols[0].string
-	year = cols[2].string
+	year = (cols[2].string)[0:4]
 	rating = cols[7].string
 	
 	if rating == '-':
