@@ -1,4 +1,5 @@
-#Aleksandr Iskhakov, 2017. Code and its parts are free to use for non-commercial purposes
+#Copyright (c) 2017 Aleksandr Iskhakov
+#Published under the terms of the Do What The Fuck You Want To Public License, Version 2. See the LICENSE file for more details.
 import sys
 from datetime import datetime
 from bs4 import BeautifulSoup
