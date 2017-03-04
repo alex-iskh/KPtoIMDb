@@ -1,5 +1,4 @@
 #Aleksandr Iskhakov, 2017. Code and its parts are free to use for non-commercial purposes
-#requires python 3 with following packages: beautifulsoup4, imdbpie, transliterate, selenium and also geckodriver
 import sys
 from datetime import datetime
 from bs4 import BeautifulSoup
