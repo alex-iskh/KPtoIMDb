@@ -11,10 +11,13 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 
+def append_to_file(filename, message):
+	with open(filename, 'ab') as file:
+		file.write((message + '\n').encode('utf8'))
+
 def log(message):
 	print(message)
-	with open('log.txt', 'a') as log_file:
-		log_file.write(message + '\n')
+	append_to_file('log.txt', message)
 
 log('Export started: ' + str(datetime.now()))
 
@@ -31,6 +34,9 @@ except FileNotFoundError as ex:
 
 imdb = Imdb()
 
+mismatches_file = 'not_exact_match.txt'
+skipped_films_file = 'skipped_films.txt'
+
 table = soup.find('table')
 rows = table.findAll('tr')
 for row in rows[1:]:
@@ -42,8 +48,7 @@ for row in rows[1:]:
 	
 	if rating == '-':
 		log('Film has no rating, skipped')
-		with open('skipped_films.txt', 'a') as skipped_films:
-			skipped_films.write(title + '|' + title_rus + '|' + year + '|' + rating + '\n')
+		append_to_file(skipped_films_file, title + '|' + title_rus + '|' + year + '|' + rating + '\n')
 		continue
 	
 	if not title:
@@ -60,10 +65,9 @@ for row in rows[1:]:
 		if year_diff <= 1:
 			if title != found_film['title'] or year_diff != 0:
 				log('Title is different or year doesn\'t exactly match')
-				with open('not_exact_match.txt', 'a') as not_exact_match:
-					not_exact_match.write(title + '|' + title_rus + '|' + year + '|' + rating + '\n'
-						+ found_film['title'] + ' (' + str(found_film['year']) + ') : ' 
-						+ 'http://www.imdb.com/title/' + found_film['imdb_id'] + '\n\n')
+				append_to_file(mismatches_file, title + '|' + title_rus + '|' + year + '|' + rating + '\n'
+					+ found_film['title'] + ' (' + str(found_film['year']) + ') : '
+					+ 'http://www.imdb.com/title/' + found_film['imdb_id'] + '\n\n')
 			
 			try:
 				browser.get('http://www.imdb.com/title/' + found_film['imdb_id'])
@@ -79,8 +83,7 @@ for row in rows[1:]:
 			log('Year does not match at all')
 	else:
 		log('\nFilm not found in the search results, skipped')
-		with open('skipped_films.txt', 'a') as skipped_films:
-			skipped_films.write(title + '|' + title_rus + '|' + year + '|' + rating + '\n')
+		append_to_file(skipped_films_file, title + '|' + title_rus + '|' + year + '|' + rating + '\n')
 
 browser.quit()
 log('Export finished: ' + str(datetime.now()))
