@@ -73,6 +73,10 @@ def main():
 		
 		for found_film in search_res:
 			log(to_string('\nFound: ', found_film['title'], ' (', found_film['year'], ')'))
+			
+			if found_film['year'] is None:
+				found_film['year'] = '0'
+			
 			year_diff = abs(int(year) - int(found_film['year']))
 			if year_diff <= 1:
 				if title != found_film['title'] or year_diff != 0:
