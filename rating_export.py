@@ -31,66 +31,70 @@ def init_browser_with_profile(path_to_profile):
 	browser.set_page_load_timeout(10)
 	return browser
 
-log('Export started: ' + str(datetime.now()))
+def main():
+	log('Export started: ' + str(datetime.now()))
 
-try:
-	films_table = get_table_from_export_file(sys.argv[1])
-	browser = init_browser_with_profile(sys.argv[2])
-except FileNotFoundError as ex:
-	log('Error on initialization: ' + ex.filename + ' - ' + ex.strerror)
-	sys.exit()
+	try:
+		films_table = get_table_from_export_file(sys.argv[1])
+		browser = init_browser_with_profile(sys.argv[2])
+	except FileNotFoundError as ex:
+		log('Error on initialization: ' + ex.filename + ' - ' + ex.strerror)
+		sys.exit()
 
-imdb = Imdb()
+	imdb = Imdb()
 
-mismatches_file = 'not_exact_match.txt'
-skipped_films_file = 'skipped_films.txt'
+	mismatches_file = 'not_exact_match.txt'
+	skipped_films_file = 'skipped_films.txt'
 
-rows = films_table.findAll('tr')
-for row in rows[1:]:
-	cols = row.findAll('td')
-	title = cols[1].string
-	title_rus = cols[0].string
-	year = (cols[2].string)[0:4]
-	rating = cols[7].string
-	
-	if rating == '-':
-		log('Film has no rating, skipped')
-		append_to_file(skipped_films_file, title + '|' + title_rus + '|' + year + '|' + rating + '\n')
-		continue
-	
-	if not title:
-		title = translit(title_rus, 'ru', reversed=True)
-	
-	search_res = imdb.search_for_title(title)
-	
-	log('\n==========================================================')
-	log(str(title) + '\n' + str(title_rus) + '\nYear: ' + str(year) + '\nRating: ' + str(rating))
-	
-	for found_film in search_res:
-		log('\nFound: ' + str(found_film['title']) + ' (' + str(found_film['year']) + ')')
-		year_diff = abs(int(year) - int(found_film['year']))
-		if year_diff <= 1:
-			if title != found_film['title'] or year_diff != 0:
-				log('Title is different or year doesn\'t exactly match')
-				append_to_file(mismatches_file, title + '|' + title_rus + '|' + year + '|' + rating + '\n'
-					+ found_film['title'] + ' (' + str(found_film['year']) + ') : '
-					+ 'http://www.imdb.com/title/' + found_film['imdb_id'] + '\n\n')
-			
-			try:
-				browser.get('http://www.imdb.com/title/' + found_film['imdb_id'])
-			except TimeoutException:
-				#seems like it's the only way to restrict 'get' by timer
-				pass
-			
-			browser.find_element_by_xpath('//*[@data-reactid=".2.0"]').click()
-			browser.find_element_by_xpath('//*[@data-reactid=".2.1.0.1.$' + rating + '"]').click()
-			log('Rated')
-			break
+	rows = films_table.findAll('tr')
+	for row in rows[1:]:
+		cols = row.findAll('td')
+		title = cols[1].string
+		title_rus = cols[0].string
+		year = (cols[2].string)[0:4]
+		rating = cols[7].string
+		
+		if rating == '-':
+			log('Film has no rating, skipped')
+			append_to_file(skipped_films_file, title + '|' + title_rus + '|' + year + '|' + rating + '\n')
+			continue
+		
+		if not title:
+			title = translit(title_rus, 'ru', reversed=True)
+		
+		search_res = imdb.search_for_title(title)
+		
+		log('\n==========================================================')
+		log(str(title) + '\n' + str(title_rus) + '\nYear: ' + str(year) + '\nRating: ' + str(rating))
+		
+		for found_film in search_res:
+			log('\nFound: ' + str(found_film['title']) + ' (' + str(found_film['year']) + ')')
+			year_diff = abs(int(year) - int(found_film['year']))
+			if year_diff <= 1:
+				if title != found_film['title'] or year_diff != 0:
+					log('Title is different or year doesn\'t exactly match')
+					append_to_file(mismatches_file, title + '|' + title_rus + '|' + year + '|' + rating + '\n'
+						+ found_film['title'] + ' (' + str(found_film['year']) + ') : '
+						+ 'http://www.imdb.com/title/' + found_film['imdb_id'] + '\n\n')
+				
+				try:
+					browser.get('http://www.imdb.com/title/' + found_film['imdb_id'])
+				except TimeoutException:
+					#seems like it's the only way to restrict 'get' by timer
+					pass
+				
+				browser.find_element_by_xpath('//*[@data-reactid=".2.0"]').click()
+				browser.find_element_by_xpath('//*[@data-reactid=".2.1.0.1.$' + rating + '"]').click()
+				log('Rated')
+				break
+			else:
+				log('Year does not match at all')
 		else:
-			log('Year does not match at all')
-	else:
-		log('\nFilm not found in the search results, skipped')
-		append_to_file(skipped_films_file, title + '|' + title_rus + '|' + year + '|' + rating + '\n')
+			log('\nFilm not found in the search results, skipped')
+			append_to_file(skipped_films_file, title + '|' + title_rus + '|' + year + '|' + rating + '\n')
 
-browser.quit()
-log('Export finished: ' + str(datetime.now()))
+	browser.quit()
+	log('Export finished: ' + str(datetime.now()))
+
+if __name__ == "__main__":
+	main()
