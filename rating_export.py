@@ -10,6 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import WebDriverException
 
 def to_string(*args):
 	return ''.join(map(str, args))
@@ -51,57 +52,61 @@ def main():
 	skipped_films_file = 'skipped_films.txt'
 
 	rows = films_table.findAll('tr')
-	for row in rows[1:]:
-		cols = row.findAll('td')
-		title = cols[1].string
-		title_rus = cols[0].string
-		year = (cols[2].string)[0:4]
-		rating = cols[7].string
-		
-		if rating == '-':
-			log('Film has no rating, skipped')
-			append_to_file(skipped_films_file, to_string(title, '|', title_rus, '|', year, '|', rating, '\n'))
-			continue
-		
-		if not title:
-			title = translit(title_rus, 'ru', reversed=True)
-		
-		search_res = imdb.search_for_title(title)
-		
-		log(to_string('\n==========================================================\n',
-			title, '\n', title_rus, '\nYear: ', year, '\nRating: ', rating))
-		
-		for found_film in search_res:
-			log(to_string('\nFound: ', found_film['title'], ' (', found_film['year'], ')'))
+	try:
+		for row in rows[1:]:
+			cols = row.findAll('td')
+			title = cols[1].string
+			title_rus = cols[0].string
+			year = (cols[2].string)[0:4]
+			rating = cols[7].string
 			
-			if found_film['year'] is None:
-				found_film['year'] = '0'
+			if rating == '-':
+				log('Film has no rating, skipped')
+				append_to_file(skipped_films_file, to_string(title, '|', title_rus, '|', year, '|', rating, '\n'))
+				continue
 			
-			year_diff = abs(int(year) - int(found_film['year']))
-			if year_diff <= 1:
-				if title != found_film['title'] or year_diff != 0:
-					log('Title is different or year doesn\'t exactly match')
-					append_to_file(mismatches_file, to_string(title, '|', title_rus, '|', year, '|', rating, '\n',
-						found_film['title'], ' (', str(found_film['year']), ') : ',
-						'http://www.imdb.com/title/', found_film['imdb_id'], '\n\n'))
+			if not title:
+				title = translit(title_rus, 'ru', reversed=True)
+			
+			search_res = imdb.search_for_title(title)
+			
+			log(to_string('\n==========================================================\n',
+				title, '\n', title_rus, '\nYear: ', year, '\nRating: ', rating))
+			
+			for found_film in search_res:
+				log(to_string('\nFound: ', found_film['title'], ' (', found_film['year'], ')'))
 				
-				try:
-					browser.get('http://www.imdb.com/title/' + found_film['imdb_id'])
-				except TimeoutException:
-					#seems like it's the only way to restrict 'get' by timer
-					pass
+				if found_film['year'] is None:
+					found_film['year'] = '0'
 				
-				browser.find_element_by_xpath('//*[@data-reactid=".2.0"]').click()
-				browser.find_element_by_xpath(to_string('//*[@data-reactid=".2.1.0.1.$', rating, '"]')).click()
-				log('Rated')
-				break
+				year_diff = abs(int(year) - int(found_film['year']))
+				if year_diff <= 1:
+					if title != found_film['title'] or year_diff != 0:
+						log('Title is different or year doesn\'t exactly match')
+						append_to_file(mismatches_file, to_string(title, '|', title_rus, '|', year, '|', rating, '\n',
+							found_film['title'], ' (', str(found_film['year']), ') : ',
+							'http://www.imdb.com/title/', found_film['imdb_id'], '\n\n'))
+					
+					try:
+						browser.get('http://www.imdb.com/title/' + found_film['imdb_id'])
+					except TimeoutException:
+						#seems like it's the only way to restrict 'get' by timer
+						pass
+					
+					browser.find_element_by_xpath('//*[@data-reactid=".2.0"]').click()
+					browser.find_element_by_xpath(to_string('//*[@data-reactid=".2.1.0.1.$', rating, '"]')).click()
+					log('Rated')
+					break
+				else:
+					log('Year does not match at all')
 			else:
-				log('Year does not match at all')
-		else:
-			log('\nFilm not found in the search results, skipped')
-			append_to_file(skipped_films_file, to_string(title, '|', title_rus, '|', year, '|', rating, '\n'))
-
-	browser.quit()
+				log('\nFilm not found in the search results, skipped')
+				append_to_file(skipped_films_file, to_string(title, '|', title_rus, '|', year, '|', rating, '\n'))
+		
+		browser.quit()
+	except WebDriverException as ex:
+		log('Web driver error: ' + ex.msg)
+	
 	log(to_string('Export finished: ', datetime.now(),
 		'\n}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}'))
 
