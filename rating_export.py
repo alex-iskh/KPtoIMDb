@@ -19,17 +19,25 @@ def log(message):
 	print(message)
 	append_to_file('log.txt', message)
 
+def get_table_from_export_file(path_to_export_file):
+	html = open(path_to_export_file).read()
+	soup = BeautifulSoup(html, 'html.parser')
+	return soup.find('table')
+
+def init_browser_with_profile(path_to_profile):
+	#cross-browser implementation sure'd be nice
+	profile = webdriver.FirefoxProfile(path_to_profile)
+	browser = webdriver.Firefox(profile)
+	browser.set_page_load_timeout(10)
+	return browser
+
 log('Export started: ' + str(datetime.now()))
 
 try:
-	html = open(sys.argv[1]).read()
-	soup = BeautifulSoup(html, 'html.parser')
-
-	profile = webdriver.FirefoxProfile(sys.argv[2])
-	browser = webdriver.Firefox(profile)
-	browser.set_page_load_timeout(10)
+	films_table = get_table_from_export_file(sys.argv[1])
+	browser = init_browser_with_profile(sys.argv[2])
 except FileNotFoundError as ex:
-	log('Error in arguments: ' + ex.filename + ' - ' + ex.strerror)
+	log('Error on initialization: ' + ex.filename + ' - ' + ex.strerror)
 	sys.exit()
 
 imdb = Imdb()
@@ -37,8 +45,7 @@ imdb = Imdb()
 mismatches_file = 'not_exact_match.txt'
 skipped_films_file = 'skipped_films.txt'
 
-table = soup.find('table')
-rows = table.findAll('tr')
+rows = films_table.findAll('tr')
 for row in rows[1:]:
 	cols = row.findAll('td')
 	title = cols[1].string
